@@ -3,9 +3,15 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { Trash2, Plus, Minus } from "lucide-react";
+import { useEffect } from "react";
 
 const Cart = () => {
   const { items, removeItem, updateQuantity, total } = useCart();
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   if (items.length === 0) {
     return (

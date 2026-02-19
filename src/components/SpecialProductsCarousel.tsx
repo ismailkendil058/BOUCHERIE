@@ -22,11 +22,11 @@ const SpecialProductsCarousel = () => {
     <section className="py-10 md:py-14 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col items-center mb-6">
+        <div className="flex flex-col items-center mb-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Star className="w-5 h-5 text-primary fill-primary" />
-            <h2 className="text-2xl md:text-4xl font-bold tracking-tight">Nos Spécialités</h2>
-            <Star className="w-5 h-5 text-primary fill-primary" />
+            <Star className="w-6 h-6 text-primary fill-primary" />
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Nos Spécialités</h2>
+            <Star className="w-6 h-6 text-primary fill-primary" />
           </div>
           <div className="flex gap-2">
             <button

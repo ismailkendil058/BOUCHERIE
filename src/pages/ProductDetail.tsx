@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useStore } from "@/contexts/StoreContext";
 import { useCart } from "@/contexts/CartContext";
 import Header from "@/components/Header";
@@ -11,6 +11,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const { products } = useStore();
   const { addItem } = useCart();
+  const navigate = useNavigate();
   const product = products.find((p) => p.id === id);
   const [quantity, setQuantity] = useState(product?.priceUnit === "kg" ? 0.5 : 1);
   const [customWeight, setCustomWeight] = useState("");
@@ -43,6 +44,7 @@ const ProductDetail = () => {
     const qty = customWeight ? parseFloat(customWeight) : quantity;
     if (!qty || qty <= 0) return;
     addItem(product, qty);
+    navigate("/cart");
     toast.success(`${product.name} ajouté au panier`);
   };
 
