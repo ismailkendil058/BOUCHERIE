@@ -1,0 +1,116 @@
+import { useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Upload, X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
+interface ImageUploadProps {
+  value: string;
+  onChange: (url: string) => void;
+  folder?: string;
+}
+
+const ImageUpload = ({ value, onChange, folder = "misc" }: ImageUploadProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Veuillez sélectionner une image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image ne doit pas dépasser 5 Mo.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${folder}/${Date.now()}.${ext}`;
+
+      const { error } = await supabase.storage
+        .from("images")
+        .upload(path, file, { upsert: true });
+
+      if (error) throw error;
+
+      const { data } = supabase.storage.from("images").getPublicUrl(path);
+      onChange(data.publicUrl);
+      toast.success("Image téléchargée");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur lors du téléchargement.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div
+        className="border border-dashed border-border rounded-none flex flex-col items-center justify-center cursor-pointer hover:bg-muted/30 transition-colors relative overflow-hidden"
+        style={{ minHeight: 120 }}
+        onClick={() => !uploading && inputRef.current?.click()}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          const file = e.dataTransfer.files[0];
+          if (file) handleFile(file);
+        }}
+      >
+        {value ? (
+          <>
+            <img
+              src={value}
+              alt="preview"
+              className="w-full h-32 object-cover"
+            />
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onChange(""); }}
+              className="absolute top-1 right-1 bg-background/80 border border-border p-1 hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </>
+        ) : uploading ? (
+          <div className="flex flex-col items-center gap-2 p-6 text-muted-foreground">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span className="text-xs">Téléchargement…</span>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2 p-6 text-muted-foreground">
+            <Upload className="w-6 h-6" />
+            <span className="text-xs text-center">
+              Cliquer ou glisser une image<br />
+              <span className="text-[10px]">JPG, PNG, WEBP — max 5 Mo</span>
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* URL fallback */}
+      <input
+        type="text"
+        placeholder="Ou coller une URL d'image"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full border border-border px-3 py-2 text-sm bg-background"
+      />
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file);
+          e.target.value = "";
+        }}
+      />
+    </div>
+  );
+};
+
+export default ImageUpload;
