@@ -1,6 +1,6 @@
 import { useStore } from "@/contexts/StoreContext";
 import { Navigate, NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, Package, ShoppingCart, MapPin, Grid3X3, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Grid3X3, LogOut } from "lucide-react";
 
 const AdminLayout = () => {
   const { isAdmin, logout } = useStore();
@@ -22,7 +22,6 @@ const AdminLayout = () => {
           <NavLink to="/admin/orders" className={linkClass}><ShoppingCart className="w-4 h-4" /> Commandes</NavLink>
           <NavLink to="/admin/products" className={linkClass}><Package className="w-4 h-4" /> Produits</NavLink>
           <NavLink to="/admin/categories" className={linkClass}><Grid3X3 className="w-4 h-4" /> Catégories</NavLink>
-          <NavLink to="/admin/delivery" className={linkClass}><MapPin className="w-4 h-4" /> Tarifs & Adresses</NavLink>
         </nav>
         <div className="p-4 border-t border-border">
           <button onClick={() => logout()} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
