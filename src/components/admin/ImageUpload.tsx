@@ -15,7 +15,7 @@ const ImageUpload = ({ value, onChange, folder = "misc" }: ImageUploadProps) => 
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Veuillez sélectionner une image.");
+      toast.error("Veuillez sélectionner une image (JPG, PNG, WEBP).");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
@@ -24,22 +24,47 @@ const ImageUpload = ({ value, onChange, folder = "misc" }: ImageUploadProps) => 
     }
 
     setUploading(true);
+    // Create a unique file path
+    const ext = file.name.split(".").pop();
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const filePath = `${folder}/${Date.now()}_${sanitizedName}`;
+
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${folder}/${Date.now()}.${ext}`;
+      console.log("Submitting upload to folder:", folder);
 
-      const { error } = await supabase.storage
+      // We remove the hard 20s timeout and let Supabase handle the retry logic.
+      // 100kb shouldn't take long, but we want to know the *actual* error if it fails.
+      const { data, error } = await supabase.storage
         .from("images")
-        .upload(path, file, { upsert: true });
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: file.type,
+        });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase Storage Error:", error);
+        throw error;
+      }
 
-      const { data } = supabase.storage.from("images").getPublicUrl(path);
-      onChange(data.publicUrl);
-      toast.success("Image téléchargée");
-    } catch (err) {
-      console.error(err);
-      toast.error("Erreur lors du téléchargement.");
+      console.log("Upload Success:", data);
+
+      const { data: publicUrlData } = supabase.storage.from("images").getPublicUrl(filePath);
+
+      if (!publicUrlData.publicUrl) {
+        throw new Error("Unable to retrieve public URL.");
+      }
+
+      onChange(publicUrlData.publicUrl);
+      toast.success("Image téléchargée avec succès");
+    } catch (err: any) {
+      console.error("ImageUpload Error Trace:", err);
+      // Give more specific feedback for common issues
+      let msg = "Erreur lors du téléchargement.";
+      if (err.message?.includes("bucket")) msg = "Erreur de configuration du stockage Supabase.";
+      if (err.status === 403 || err.message?.includes("Permission")) msg = "Accès refusé. Reconnectez-vous en tant qu'admin.";
+
+      toast.error(err.message || msg);
     } finally {
       setUploading(false);
     }

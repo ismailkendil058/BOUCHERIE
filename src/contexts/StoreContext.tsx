@@ -72,30 +72,39 @@ interface StoreContextType {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const toProduct = (row: Record<string, unknown>): Product => ({
-  id: row.id as string,
-  name: row.name as string,
-  category: row.category as string,
-  description: row.description as string,
-  price: Number(row.price),
-  priceUnit: row.price_unit as "kg" | "piece",
-  image: row.image as string,
-  halalCertified: row.halal_certified as boolean,
-  inStock: row.in_stock as boolean,
-  featured: (row.featured as boolean) ?? false,
-});
+const toProduct = (row: any): Product => {
+  if (!row) throw new Error("Product data is missing");
+  return {
+    id: String(row.id || ""),
+    name: String(row.name || "Produit sans nom"),
+    category: String(row.category || ""),
+    description: String(row.description || ""),
+    price: Number(row.price || 0),
+    priceUnit: (row.price_unit as "kg" | "piece") || "kg",
+    image: String(row.image || ""),
+    halalCertified: Boolean(row.halal_certified),
+    inStock: Boolean(row.in_stock),
+    featured: Boolean(row.featured),
+  };
+};
 
-const toCategory = (row: Record<string, unknown>): Category => ({
-  id: row.id as string,
-  name: row.name as string,
-  image: row.image as string,
-});
+const toCategory = (row: any): Category => {
+  if (!row) throw new Error("Category data is missing");
+  return {
+    id: String(row.id || ""),
+    name: String(row.name || "Catégorie sans nom"),
+    image: String(row.image || ""),
+  };
+};
 
-const toZone = (row: Record<string, unknown>): DeliveryZone => ({
-  id: row.id as string,
-  name: row.name as string,
-  price: Number(row.price),
-});
+const toZone = (row: any): DeliveryZone => {
+  if (!row) throw new Error("Zone data is missing");
+  return {
+    id: String(row.id || ""),
+    name: String(row.name || ""),
+    price: Number(row.price || 0),
+  };
+};
 
 // ─── Context ─────────────────────────────────────────────────────────────────
 
@@ -106,56 +115,97 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [deliveryZones, setDeliveryZones] = useState<DeliveryZone[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => localStorage.getItem("app_is_admin") === "true");
   const [loading, setLoading] = useState(true);
 
   // ── Initial data fetch ────────────────────────────────────────────────────
 
   useEffect(() => {
     const init = async () => {
-      setLoading(true);
-      // Fetch public data in parallel
-      const [{ data: cats }, { data: prods }, { data: zones }] = await Promise.all([
-        supabase.from("categories").select("*").order("name"),
-        supabase.from("products").select("*").order("name"),
-        supabase.from("delivery_zones").select("*").order("name"),
-      ]);
-      if (cats) setCategories(cats.map(toCategory));
-      if (prods) setProducts(prods.map(toProduct));
-      if (zones) setDeliveryZones(zones.map(toZone));
+      try {
+        setLoading(true);
+        console.log("Store: Initializing data...");
 
-      // Check current session & admin role
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        await checkAdminRole(session.user.id);
+        const [catsRes, prodsRes, zonesRes] = await Promise.all([
+          supabase.from("categories").select("*").order("name"),
+          supabase.from("products").select("*").order("name"),
+          supabase.from("delivery_zones").select("*").order("name"),
+        ]);
+
+        if (catsRes.error) console.error("Error fetching categories:", catsRes.error);
+        if (prodsRes.error) console.error("Error fetching products:", prodsRes.error);
+        if (zonesRes.error) console.error("Error fetching zones:", zonesRes.error);
+
+        if (catsRes.data) {
+          console.log(`Store: Loaded ${catsRes.data.length} categories`);
+          setCategories(catsRes.data.map(toCategory).filter(Boolean) as Category[]);
+        }
+        if (prodsRes.data) {
+          console.log(`Store: Loaded ${prodsRes.data.length} products`);
+          setProducts(prodsRes.data.map(toProduct).filter(Boolean) as Product[]);
+        }
+        if (zonesRes.data) {
+          setDeliveryZones(zonesRes.data.map(toZone).filter(Boolean) as DeliveryZone[]);
+        }
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await checkAdminRole(session.user.id);
+        }
+      } catch (err) {
+        console.error("Store init crash:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     init();
+  }, []);
 
-    // Listen to auth changes
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log(`Store: Auth Event - ${event}`, { userId: session?.user?.id });
+
       if (session?.user) {
-        await checkAdminRole(session.user.id);
-      } else {
+        if (!isAdmin) {
+          console.log("Store: Session detected, verifying admin role...");
+          await checkAdminRole(session.user.id);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        console.log("Store: Formal sign out detected, clearing admin state");
         setIsAdmin(false);
+        localStorage.removeItem("app_is_admin");
         setOrders([]);
       }
     });
-    return () => subscription.unsubscribe();
-  }, []);
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [isAdmin]);
 
   const checkAdminRole = async (userId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
       .eq("role", "admin")
       .maybeSingle();
+
+    if (error) {
+      console.error("Error checking admin role:", error);
+      return;
+    }
+
     const admin = !!data;
     setIsAdmin(admin);
-    if (admin) await fetchOrders();
+
+    if (admin) {
+      localStorage.setItem("app_is_admin", "true");
+      await fetchOrders();
+    } else {
+      localStorage.removeItem("app_is_admin");
+    }
   };
 
   const fetchOrders = async () => {
@@ -250,6 +300,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
       console.log("Admin role found, setting isAdmin to true");
       setIsAdmin(true);
+      localStorage.setItem("app_is_admin", "true");
       await fetchOrders();
       return { success: true };
     } catch (err: any) {
@@ -259,16 +310,23 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    setIsAdmin(false);
-    setOrders([]);
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Store: Logout error:", err);
+    } finally {
+      setIsAdmin(false);
+      localStorage.removeItem("app_is_admin");
+      setOrders([]);
+      console.log("Store: Admin logged out, local state cleared");
+    }
   };
 
   // ── Orders ───────────────────────────────────────────────────────────────
 
   const addOrder = async (order: Omit<Order, "id" | "status" | "createdAt">) => {
     const orderId = `ORD-${Date.now()}`;
-    await supabase.from("orders").insert({
+    const { error: insertError } = await supabase.from("orders").insert({
       id: orderId,
       customer_first_name: order.customer.firstName,
       customer_last_name: order.customer.lastName,
@@ -282,7 +340,9 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       subtotal: order.subtotal,
       total: order.total,
       status: "pending",
-    });
+    } as any);
+
+    if (insertError) throw insertError;
 
     const itemsToInsert = order.items.map((i) => ({
       order_id: orderId,
@@ -293,11 +353,13 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
       product_image: i.product.image,
       quantity: i.quantity,
     }));
-    await supabase.from("order_items").insert(itemsToInsert);
+    const { error: itemsError } = await supabase.from("order_items").insert(itemsToInsert);
+    if (itemsError) throw itemsError;
   };
 
   const updateOrderStatus = async (id: string, status: Order["status"]) => {
-    await supabase.from("orders").update({ status }).eq("id", id);
+    const { error } = await supabase.from("orders").update({ status }).eq("id", id);
+    if (error) throw error;
     setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
   };
 
@@ -305,25 +367,37 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
   const addProduct = async (p: Omit<Product, "id">) => {
     const id = `prod-${Date.now()}`;
-    const { data } = await supabase.from("products").insert({
+    const { data, error } = await supabase.from("products").insert({
       id, name: p.name, category: p.category, description: p.description,
       price: p.price, price_unit: p.priceUnit, image: p.image,
       halal_certified: p.halalCertified, in_stock: p.inStock, featured: p.featured,
-    }).select().single();
-    if (data) setProducts((prev) => [...prev, toProduct(data as Record<string, unknown>)]);
+    }).select().maybeSingle();
+
+    if (error) {
+      console.error("Add Product Error:", error);
+      throw error;
+    }
+    if (data) {
+      const newProd = toProduct(data);
+      setProducts((prev) => [...prev, newProd]);
+      console.log("Product added successfully to state");
+    }
   };
 
   const updateProduct = async (p: Product) => {
-    const { data } = await supabase.from("products").update({
+    const { data, error } = await supabase.from("products").update({
       name: p.name, category: p.category, description: p.description,
       price: p.price, price_unit: p.priceUnit, image: p.image,
       halal_certified: p.halalCertified, in_stock: p.inStock, featured: p.featured,
     }).eq("id", p.id).select().single();
+
+    if (error) throw error;
     if (data) setProducts((prev) => prev.map((x) => x.id === p.id ? toProduct(data as Record<string, unknown>) : x));
   };
 
   const deleteProduct = async (id: string) => {
-    await supabase.from("products").delete().eq("id", id);
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) throw error;
     setProducts((prev) => prev.filter((x) => x.id !== id));
   };
 
@@ -331,17 +405,29 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
   const addCategory = async (c: Omit<Category, "id">) => {
     const id = `cat-${Date.now()}`;
-    const { data } = await supabase.from("categories").insert({ id, name: c.name, image: c.image }).select().single();
-    if (data) setCategories((prev) => [...prev, toCategory(data as Record<string, unknown>)]);
+    const { data, error } = await supabase.from("categories").insert({ id, name: c.name, image: c.image }).select().maybeSingle();
+
+    if (error) {
+      console.error("Add Category Error:", error);
+      throw error;
+    }
+    if (data) {
+      const newCat = toCategory(data);
+      setCategories((prev) => [...prev, newCat]);
+      console.log("Category added successfully to state");
+    }
   };
 
   const updateCategory = async (c: Category) => {
-    const { data } = await supabase.from("categories").update({ name: c.name, image: c.image }).eq("id", c.id).select().single();
+    const { data, error } = await supabase.from("categories").update({ name: c.name, image: c.image }).eq("id", c.id).select().single();
+
+    if (error) throw error;
     if (data) setCategories((prev) => prev.map((x) => x.id === c.id ? toCategory(data as Record<string, unknown>) : x));
   };
 
   const deleteCategory = async (id: string) => {
-    await supabase.from("categories").delete().eq("id", id);
+    const { error } = await supabase.from("categories").delete().eq("id", id);
+    if (error) throw error;
     setCategories((prev) => prev.filter((x) => x.id !== id));
   };
 

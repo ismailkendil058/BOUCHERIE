@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStore } from "@/contexts/StoreContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const AdminLogin = () => {
-  const { login } = useStore();
+  const { login, isAdmin } = useStore();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isAdmin) {
+      navigate("/admin", { replace: true });
+    }
+  }, [isAdmin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +23,7 @@ const AdminLogin = () => {
     setSubmitting(false);
     if (success) {
       toast.success("Connexion réussie");
-      navigate("/admin");
+      navigate("/admin", { replace: true });
     } else {
       toast.error(error || "Identifiants incorrects ou accès non autorisé");
     }
@@ -54,7 +60,7 @@ const AdminLogin = () => {
             disabled={submitting}
             className="w-full bg-foreground text-background py-3 text-sm uppercase tracking-widest hover:bg-foreground/90 transition-colors disabled:opacity-50"
           >
-            {submitting ? "Connexion…" : "Se connecter"}
+            {submitting || isAdmin ? "Connexion…" : "Se connecter"}
           </button>
         </form>
       </div>

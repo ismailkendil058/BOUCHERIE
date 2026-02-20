@@ -4,10 +4,19 @@ import { LayoutDashboard, Package, ShoppingCart, Grid3X3, LogOut, Menu, Truck } 
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const AdminLayout = () => {
-  const { isAdmin, logout } = useStore();
+  const { isAdmin, loading, logout } = useStore();
   const [open, setOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!isAdmin) return <Navigate to="/admin/login" replace />;
 
@@ -38,7 +47,19 @@ const AdminLayout = () => {
         </NavLink>
       </nav>
       <div className="p-4 border-t border-border mt-auto">
-        <button onClick={() => logout()} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full">
+        <button
+          onClick={async () => {
+            const logoutPromise = logout();
+            toast.promise(logoutPromise, {
+              loading: "Déconnexion...",
+              success: "Déconnecté avec succès",
+              error: "Erreur lors de la déconnexion",
+            });
+            await logoutPromise;
+            if (onNavigate) onNavigate();
+          }}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full p-2"
+        >
           <LogOut className="w-4 h-4" /> Déconnexion
         </button>
       </div>

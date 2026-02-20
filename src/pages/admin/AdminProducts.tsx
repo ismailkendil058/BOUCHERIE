@@ -14,21 +14,31 @@ const AdminProducts = () => {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<Omit<Product, "id">>(emptyProduct);
 
+  const [loading, setLoading] = useState(false);
+
   const handleSave = async () => {
     if (!form.name || !form.category || !form.price) {
       toast.error("Veuillez remplir les champs obligatoires.");
       return;
     }
-    if (editing) {
-      await updateProduct({ ...form, id: editing.id });
-      toast.success("Produit mis à jour");
-    } else {
-      await addProduct({ ...form });
-      toast.success("Produit ajouté");
+    setLoading(true);
+    try {
+      if (editing) {
+        await updateProduct({ ...form, id: editing.id });
+        toast.success("Produit mis à jour");
+      } else {
+        await addProduct({ ...form });
+        toast.success("Produit ajouté");
+      }
+      setEditing(null);
+      setCreating(false);
+      setForm(emptyProduct);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Erreur lors de l'enregistrement");
+    } finally {
+      setLoading(false);
     }
-    setEditing(null);
-    setCreating(false);
-    setForm(emptyProduct);
   };
 
   const startEdit = (p: Product) => {
@@ -87,7 +97,9 @@ const AdminProducts = () => {
             </label>
           </div>
           <div className="flex gap-2">
-            <button onClick={handleSave} className="bg-primary text-primary-foreground px-6 py-2 text-xs uppercase tracking-widest">Sauvegarder</button>
+            <button onClick={handleSave} disabled={loading} className="bg-primary text-primary-foreground px-6 py-2 text-xs uppercase tracking-widest disabled:opacity-50">
+              {loading ? "Sauvegarde..." : "Sauvegarder"}
+            </button>
             <button onClick={() => { setEditing(null); setCreating(false); }} className="border border-border px-6 py-2 text-xs uppercase tracking-widest">Annuler</button>
           </div>
         </div>
@@ -119,7 +131,15 @@ const AdminProducts = () => {
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button onClick={() => startEdit(p)} className="text-muted-foreground hover:text-foreground"><Edit2 className="w-4 h-4" /></button>
-                    <button onClick={() => { deleteProduct(p.id); toast.success("Produit supprimé"); }} className="text-muted-foreground hover:text-primary"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={async () => {
+                      if (!confirm("Supprimer ce produit ?")) return;
+                      try {
+                        await deleteProduct(p.id);
+                        toast.success("Produit supprimé");
+                      } catch (error) {
+                        toast.error("Erreur lors de la suppression");
+                      }
+                    }} className="text-muted-foreground hover:text-primary"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </td>
               </tr>

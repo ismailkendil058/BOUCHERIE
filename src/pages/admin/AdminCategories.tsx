@@ -11,16 +11,26 @@ const AdminCategories = () => {
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
 
+  const [loading, setLoading] = useState(false);
+
   const handleSave = async () => {
     if (!name) { toast.error("Nom requis"); return; }
-    if (editing) {
-      await updateCategory({ id: editing.id, name, image });
-      toast.success("Catégorie mise à jour");
-    } else {
-      await addCategory({ name, image });
-      toast.success("Catégorie ajoutée");
+    setLoading(true);
+    try {
+      if (editing) {
+        await updateCategory({ id: editing.id, name, image });
+        toast.success("Catégorie mise à jour");
+      } else {
+        await addCategory({ name, image });
+        toast.success("Catégorie ajoutée");
+      }
+      setEditing(null); setCreating(false); setName(""); setImage("");
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Erreur lors de l'enregistrement");
+    } finally {
+      setLoading(false);
     }
-    setEditing(null); setCreating(false); setName(""); setImage("");
   };
 
   return (
@@ -41,7 +51,9 @@ const AdminCategories = () => {
             <ImageUpload value={image} onChange={setImage} folder="categories" />
           </div>
           <div className="flex gap-2">
-            <button onClick={handleSave} className="bg-primary text-primary-foreground px-6 py-2 text-xs uppercase tracking-widest">Sauvegarder</button>
+            <button onClick={handleSave} disabled={loading} className="bg-primary text-primary-foreground px-6 py-2 text-xs uppercase tracking-widest disabled:opacity-50">
+              {loading ? "Sauvegarde..." : "Sauvegarder"}
+            </button>
             <button onClick={() => { setEditing(null); setCreating(false); }} className="border border-border px-6 py-2 text-xs uppercase tracking-widest">Annuler</button>
           </div>
         </div>
@@ -53,7 +65,15 @@ const AdminCategories = () => {
             <img src={c.image} alt={c.name} className="w-16 h-16 object-cover" />
             <span className="flex-1 font-medium">{c.name}</span>
             <button onClick={() => { setEditing(c); setCreating(false); setName(c.name); setImage(c.image); }} className="text-muted-foreground hover:text-foreground"><Edit2 className="w-4 h-4" /></button>
-            <button onClick={() => { deleteCategory(c.id); toast.success("Supprimé"); }} className="text-muted-foreground hover:text-primary"><Trash2 className="w-4 h-4" /></button>
+            <button onClick={async () => {
+              if (!confirm("Supprimer cette catégorie ?")) return;
+              try {
+                await deleteCategory(c.id);
+                toast.success("Supprimé");
+              } catch (error) {
+                toast.error("Erreur, impossible de supprimer.");
+              }
+            }} className="text-muted-foreground hover:text-primary"><Trash2 className="w-4 h-4" /></button>
           </div>
         ))}
       </div>
