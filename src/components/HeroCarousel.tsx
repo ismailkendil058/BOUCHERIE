@@ -4,17 +4,17 @@ import { Link } from "react-router-dom";
 
 const slides = [
   {
-    image: "https://images.unsplash.com/photo-1588347818036-558601350947?w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1588347818036-558601350947?auto=format&fit=crop&q=80&w=1920",
     title: "L'Excellence de la Viande Halal",
     subtitle: "Certifiée AVS – Qualité & Traçabilité",
   },
   {
-    image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=1920",
     title: "Des Pièces d'Exception",
     subtitle: "Sélectionnées avec soin par nos artisans bouchers",
   },
   {
-    image: "https://images.unsplash.com/photo-1603048297172-c92544798d5a?w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1603048297172-c92544798d5a?auto=format&fit=crop&q=80&w=1920",
     title: "Savoir-Faire Artisanal",
     subtitle: "La tradition au service de l'excellence",
   },

@@ -89,9 +89,10 @@ const Index = () => {
         <section className="relative py-24 overflow-hidden">
           <div className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1544025162-d76694265947?w=1600&q=80"
+              src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=1600"
               className="w-full h-full object-cover"
               alt="Boucherie premium"
+              loading="lazy"
             />
             <div className="absolute inset-0 bg-primary/95 mix-blend-multiply" />
           </div>

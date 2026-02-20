@@ -28,9 +28,10 @@ const Products = () => {
         <div className="relative h-[40vh] bg-foreground overflow-hidden flex items-center justify-center">
           <div className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1544025162-d76694265947?w=1600&q=80"
+              src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=1600"
               className="w-full h-full object-cover opacity-40 blur-[2px]"
               alt="Boucherie Header"
+              loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-background" />
           </div>
