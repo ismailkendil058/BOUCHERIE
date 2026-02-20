@@ -30,39 +30,92 @@ const Index = () => {
         <SpecialProductsCarousel />
 
         {/* Trust section */}
-        <section className="py-16 bg-secondary">
+        <section className="py-24 bg-white relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center mb-20">
+              <motion.span
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                className="text-primary font-bold tracking-[0.3em] uppercase text-xs mb-4 block"
+              >
+                Engagement Qualité
+              </motion.span>
+              <h2 className="text-4xl md:text-5xl font-bold">Pourquoi nous <span className="text-primary italic">faire confiance</span> ?</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               {[
-                { icon: Shield, title: "Halal Certifié AVS", desc: "Toutes nos viandes sont certifiées par l'organisme AVS, garantissant le respect des normes halal." },
-                { icon: Award, title: "Qualité Premium", desc: "Des pièces sélectionnées avec soin auprès des meilleurs éleveurs français." },
-                { icon: Truck, title: "Livraison Paris", desc: "Livraison dans tout Paris, ou retrait en magasin selon votre convenance." },
+                {
+                  icon: Shield,
+                  title: "Halal Certifié AVS",
+                  desc: "Toutes nos viandes sont certifiées par l'organisme AVS, garantissant le respect le plus strict des normes halal.",
+                  color: "bg-red-50"
+                },
+                {
+                  icon: Award,
+                  title: "Qualité Premium",
+                  desc: "Une sélection rigoureuse des meilleures pièces de viande charolaise et bovine, choisies pour leur tendreté.",
+                  color: "bg-amber-50"
+                },
+                {
+                  icon: Truck,
+                  title: "Livraison Île-de-France",
+                  desc: "Service de livraison rapide et soigné dans tout Paris et sa banlieue proche, pour une fraîcheur garantie.",
+                  color: "bg-blue-50"
+                },
               ].map((item, i) => (
                 <motion.div
                   key={i}
-                  className="text-center p-8"
-                  initial={{ opacity: 0, y: 20 }}
+                  className="relative group p-10 bg-secondary/50 rounded-3xl hover:bg-white hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-primary/10"
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.15 }}
+                  transition={{ duration: 0.6, delay: i * 0.2 }}
                   viewport={{ once: true }}
                 >
-                  <item.icon className="w-8 h-8 mx-auto mb-4 text-primary" />
-                  <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                  <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500`}>
+                    <item.icon className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {item.desc}
+                  </p>
                 </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="py-20 text-center">
-          <div className="max-w-2xl mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Prêt à commander ?</h2>
-            <p className="text-muted-foreground mb-8">Découvrez notre sélection de viandes halal premium et produits frais.</p>
-            <Link to="/products" className="inline-block bg-primary text-primary-foreground px-10 py-4 text-sm uppercase tracking-widest hover:bg-primary/90 transition-colors">
-              Voir tous nos produits
-            </Link>
+        {/* CTA Section */}
+        <section className="relative py-24 overflow-hidden">
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1544025162-d76694265947?w=1600&q=80"
+              className="w-full h-full object-cover"
+              alt="Boucherie premium"
+            />
+            <div className="absolute inset-0 bg-primary/95 mix-blend-multiply" />
+          </div>
+
+          <div className="relative max-w-4xl mx-auto px-4 text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                Une envie de viande <span className="italic">d'exception</span> ?
+              </h2>
+              <p className="text-white/80 text-lg md:text-xl mb-12 max-w-2xl mx-auto">
+                Commandez dès maintenant et recevez vos produits favoris directement chez vous, préparés avec passion.
+              </p>
+              <Link
+                to="/products"
+                className="inline-block bg-white text-primary px-12 py-5 text-sm font-bold uppercase tracking-widest hover:bg-foreground hover:text-white transition-all duration-300 shadow-2xl"
+              >
+                Accéder à la boutique
+              </Link>
+            </motion.div>
           </div>
         </section>
       </main>

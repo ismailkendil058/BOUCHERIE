@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const slides = [
   {
@@ -24,81 +24,99 @@ const HeroCarousel = () => {
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => setCurrent((c) => (c + 1) % slides.length), 5000);
+    const interval = setInterval(() => setCurrent((c) => (c + 1) % slides.length), 6000);
     return () => clearInterval(interval);
   }, []);
 
-  const prev = () => setCurrent((c) => (c - 1 + slides.length) % slides.length);
-  const next = () => setCurrent((c) => (c + 1) % slides.length);
+
 
   return (
-    <section className="relative h-[60vh] md:h-[80vh] overflow-hidden bg-foreground">
+    <section className="relative h-[70vh] md:h-[90vh] overflow-hidden bg-foreground">
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
           className="absolute inset-0"
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
         >
-          <img
-            src={slides[current].image}
-            alt={slides[current].title}
-            className="w-full h-full object-cover opacity-60"
-          />
+          <motion.div
+            className="absolute inset-0"
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 6, ease: "linear" }}
+          >
+            <img
+              src={slides[current].image}
+              alt={slides[current].title}
+              className="w-full h-full object-cover opacity-60"
+            />
+          </motion.div>
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-foreground/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/20 to-transparent" />
 
       <div className="absolute inset-0 flex items-center justify-center text-center px-4">
-        <div>
-          <motion.h1
-            key={`title-${current}`}
-            className="text-3xl md:text-6xl font-bold text-background mb-4"
-            style={{ fontFamily: "'Playfair Display', serif" }}
-            initial={{ opacity: 0, y: 20 }}
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            key={`content-${current}`}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
           >
-            {slides[current].title}
-          </motion.h1>
-          <motion.p
-            key={`sub-${current}`}
-            className="text-sm md:text-lg tracking-widest uppercase mb-8"
-            style={{ color: "hsl(0 0% 80%)" }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            {slides[current].subtitle}
-          </motion.p>
-          <div className="flex gap-4 justify-center">
-            <a href="/products" className="bg-primary text-primary-foreground px-8 py-3 text-sm uppercase tracking-widest hover:bg-primary/90 transition-colors">
-              Commander maintenant
-            </a>
-            <a href="/products" className="border border-background/50 text-background px-8 py-3 text-sm uppercase tracking-widest hover:bg-background/10 transition-colors">
-              Découvrir
-            </a>
-          </div>
+            <motion.span
+              className="text-primary font-bold tracking-[0.3em] uppercase text-xs md:text-sm mb-6 block"
+              initial={{ opacity: 0, letterSpacing: "0.1em" }}
+              animate={{ opacity: 1, letterSpacing: "0.3em" }}
+              transition={{ duration: 1, delay: 0.6 }}
+            >
+              {slides[current].subtitle}
+            </motion.span>
+
+            <h1
+              className="text-4xl md:text-8xl font-bold text-white mb-10 leading-tight"
+              style={{ fontFamily: "'Playfair Display', serif" }}
+            >
+              {current === 0 ? (
+                <>L'Excellence de la <span className="text-primary italic">Viande Halal</span></>
+              ) : current === 1 ? (
+                <>Des Pièces <span className="text-primary italic">d'Exception</span></>
+              ) : (
+                <>Savoir-Faire <span className="text-primary italic">Artisanal</span></>
+              )}
+            </h1>
+
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mt-12">
+              <Link
+                to="/products"
+                className="bg-primary text-white px-10 py-5 text-sm font-bold uppercase tracking-widest hover:bg-white hover:text-primary transition-all duration-300 shadow-xl"
+              >
+                Commander maintenant
+              </Link>
+              <Link
+                to="/products"
+                className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-5 text-sm font-bold uppercase tracking-widest hover:bg-white hover:text-foreground transition-all duration-300"
+              >
+                Découvrir
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </div>
 
-      <button onClick={prev} className="absolute left-4 top-1/2 -translate-y-1/2 text-background/70 hover:text-background transition-colors">
-        <ChevronLeft className="w-8 h-8" />
-      </button>
-      <button onClick={next} className="absolute right-4 top-1/2 -translate-y-1/2 text-background/70 hover:text-background transition-colors">
-        <ChevronRight className="w-8 h-8" />
-      </button>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-4">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-primary w-6" : "bg-background/40"}`}
-          />
+            className="group py-2"
+          >
+            <div className={`h-1 transition-all duration-500 rounded-full ${i === current ? "bg-primary w-12" : "bg-white/30 w-6 group-hover:bg-white/60"}`} />
+          </button>
         ))}
       </div>
     </section>
