@@ -40,7 +40,7 @@ const AdminDashboard = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left">
-                <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground">ID</th>
+                <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground hidden sm:table-cell">ID</th>
                 <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground">Client</th>
                 <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground">Total</th>
                 <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground">Statut</th>
@@ -49,20 +49,19 @@ const AdminDashboard = () => {
             <tbody>
               {orders.slice(0, 5).map((o) => (
                 <tr key={o.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3 font-mono text-xs">{o.id}</td>
+                  <td className="px-4 py-3 font-mono text-xs hidden sm:table-cell">{o.id}</td>
                   <td className="px-4 py-3">{o.customer.firstName} {o.customer.lastName}</td>
                   <td className="px-4 py-3">{o.total.toFixed(2)} €</td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs uppercase tracking-widest px-2 py-1 ${
-                      o.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                      o.status === "preparing" ? "bg-blue-100 text-blue-800" :
-                      o.status === "ready" ? "bg-green-100 text-green-800" :
-                      "bg-secondary text-muted-foreground"
-                    }`}>{
-                      o.status === "pending" ? "En attente" :
-                      o.status === "preparing" ? "En préparation" :
-                      o.status === "ready" ? "Prête" : "Terminée"
-                    }</span>
+                    <span className={`text-xs uppercase tracking-widest px-2 py-1 ${o.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                        o.status === "preparing" ? "bg-blue-100 text-blue-800" :
+                          o.status === "ready" ? "bg-green-100 text-green-800" :
+                            "bg-secondary text-muted-foreground"
+                      }`}>{
+                        o.status === "pending" ? "En attente" :
+                          o.status === "preparing" ? "En préparation" :
+                            o.status === "ready" ? "Prête" : "Terminée"
+                      }</span>
                   </td>
                 </tr>
               ))}

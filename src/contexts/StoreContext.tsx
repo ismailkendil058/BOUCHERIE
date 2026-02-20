@@ -55,7 +55,7 @@ interface StoreContextType {
   orders: Order[];
   isAdmin: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   addOrder: (order: Omit<Order, "id" | "status" | "createdAt">) => Promise<void>;
   updateOrderStatus: (id: string, status: Order["status"]) => Promise<void>;
@@ -211,50 +211,50 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
   // ── Auth ─────────────────────────────────────────────────────────────────
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     console.log("Login attempt for:", email);
-    
+
     try {
       // Add timeout wrapper
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Login request timed out")), 10000)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Login request timed out")), 30000)
       );
-      
+
       const loginPromise = supabase.auth.signInWithPassword({ email, password });
-      
+
       const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as any;
-      
+
       console.log("Sign in result:", { data, error });
-      
+
       if (error || !data.user) {
         console.error("Login error:", error);
-        return false;
+        return { success: false, error: error?.message || "Échec de la connexion" };
       }
-      
+
       console.log("User signed in, user ID:", data.user.id);
-      
+
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", data.user.id)
         .eq("role", "admin")
         .maybeSingle();
-      
+
       console.log("Role check result:", { roleData, roleError });
-      
+
       if (!roleData) {
         console.error("No admin role found for user");
         await supabase.auth.signOut();
-        return false;
+        return { success: false, error: "Accès refusé: Vous n'avez pas les droits d'administrateur." };
       }
-      
+
       console.log("Admin role found, setting isAdmin to true");
       setIsAdmin(true);
       await fetchOrders();
-      return true;
+      return { success: true };
     } catch (err: any) {
       console.error("Login exception:", err);
-      return false;
+      return { success: false, error: err.message || "Une erreur inattendue est survenue." };
     }
   };
 

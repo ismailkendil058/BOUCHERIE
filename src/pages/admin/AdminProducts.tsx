@@ -98,10 +98,10 @@ const AdminProducts = () => {
           <thead>
             <tr className="border-b border-border text-left">
               <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground">Produit</th>
-              <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground">Catégorie</th>
+              <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground hidden md:table-cell">Catégorie</th>
               <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground">Prix</th>
-              <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground">Halal</th>
-              <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground">Spécial</th>
+              <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground hidden md:table-cell">Halal</th>
+              <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground hidden md:table-cell">Spécial</th>
               <th className="px-4 py-3 text-xs uppercase tracking-widest text-muted-foreground">Actions</th>
             </tr>
           </thead>
@@ -112,10 +112,10 @@ const AdminProducts = () => {
                   <img src={p.image} alt={p.name} className="w-10 h-10 object-cover" />
                   {p.name}
                 </td>
-                <td className="px-4 py-3">{categories.find((c) => c.id === p.category)?.name || p.category}</td>
+                <td className="px-4 py-3 hidden md:table-cell">{categories.find((c) => c.id === p.category)?.name || p.category}</td>
                 <td className="px-4 py-3">{p.price.toFixed(2)} €/{p.priceUnit === "kg" ? "kg" : "pièce"}</td>
-                <td className="px-4 py-3">{p.halalCertified ? "✓" : "–"}</td>
-                <td className="px-4 py-3">{p.featured ? "⭐" : "–"}</td>
+                <td className="px-4 py-3 hidden md:table-cell">{p.halalCertified ? "✓" : "–"}</td>
+                <td className="px-4 py-3 hidden md:table-cell">{p.featured ? "⭐" : "–"}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
                     <button onClick={() => startEdit(p)} className="text-muted-foreground hover:text-foreground"><Edit2 className="w-4 h-4" /></button>

@@ -13,13 +13,13 @@ const AdminLogin = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const ok = await login(email, password);
+    const { success, error } = await login(email, password);
     setSubmitting(false);
-    if (ok) {
+    if (success) {
       toast.success("Connexion réussie");
       navigate("/admin");
     } else {
-      toast.error("Identifiants incorrects ou accès non autorisé");
+      toast.error(error || "Identifiants incorrects ou accès non autorisé");
     }
   };
 
