@@ -1,22 +1,44 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useStore } from "@/contexts/StoreContext";
 import { motion } from "framer-motion";
+import useEmblaCarousel from "embla-carousel-react";
 
 const CategoryCarousel = () => {
   const { categories } = useStore();
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: true,
+    align: "start",
+    skipSnaps: false,
+    duration: 25
+  });
+  const [isPaused, setIsPaused] = useState(false);
 
-  const scroll = (dir: "left" | "right") => {
-    if (scrollRef.current) {
-      const amount = scrollRef.current.clientWidth * 0.8;
-      scrollRef.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
-    }
-  };
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi || isPaused) return;
+
+    const interval = setInterval(() => {
+      emblaApi.scrollNext();
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, [emblaApi, isPaused]);
 
   return (
-    <section className="py-20 md:py-32 overflow-hidden bg-background">
+    <section
+      className="py-20 md:py-32 overflow-hidden bg-background"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="text-left">
@@ -40,14 +62,14 @@ const CategoryCarousel = () => {
 
           <div className="flex gap-2">
             <button
-              onClick={() => scroll("left")}
+              onClick={scrollPrev}
               className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 group shadow-sm"
               aria-label="Précédent"
             >
               <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
             </button>
             <button
-              onClick={() => scroll("right")}
+              onClick={scrollNext}
               className="w-12 h-12 rounded-full border border-border flex items-center justify-center hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 group shadow-sm"
               aria-label="Suivant"
             >
@@ -56,23 +78,14 @@ const CategoryCarousel = () => {
           </div>
         </div>
 
-        <div className="relative">
-          <div
-            ref={scrollRef}
-            className="flex gap-8 md:gap-12 overflow-x-auto scrollbar-hide pb-8 pt-4 snap-x snap-mandatory touch-pan-y"
-            style={{
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-              WebkitOverflowScrolling: "touch"
-            }}
-          >
+        <div
+          className="overflow-hidden"
+          ref={emblaRef}
+        >
+          <div className="flex gap-8 md:gap-12 py-4">
             {categories.map((cat, i) => (
-              <motion.div
+              <div
                 key={cat.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                viewport={{ once: true }}
                 className="flex-none"
               >
                 <Link
@@ -96,7 +109,7 @@ const CategoryCarousel = () => {
                   </h3>
                   <div className="w-8 h-0.5 bg-primary mx-auto mt-2 scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
