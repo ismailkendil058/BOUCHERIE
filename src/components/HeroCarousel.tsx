@@ -31,7 +31,7 @@ const HeroCarousel = () => {
 
 
   return (
-    <section className="relative h-[70vh] md:h-[90vh] overflow-hidden bg-foreground">
+    <section className="relative h-[70dvh] md:h-[90dvh] overflow-hidden bg-foreground">
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
@@ -43,7 +43,7 @@ const HeroCarousel = () => {
         >
           <motion.div
             className="absolute inset-0"
-            initial={{ scale: 1.1 }}
+            initial={{ scale: 1.05 }}
             animate={{ scale: 1 }}
             transition={{ duration: 6, ease: "linear" }}
           >
@@ -51,6 +51,8 @@ const HeroCarousel = () => {
               src={slides[current].image}
               alt={slides[current].title}
               className="w-full h-full object-cover opacity-60"
+              loading={current === 0 ? "eager" : "lazy"}
+              decoding="async"
             />
           </motion.div>
         </motion.div>

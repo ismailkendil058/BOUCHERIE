@@ -76,17 +76,21 @@ const SpecialProductsCarousel = () => {
         {/* Scrollable row */}
         <div
           ref={scrollRef}
-          className="flex gap-6 md:gap-8 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-8 pt-4"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          className="flex gap-6 md:gap-8 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-8 pt-4 touch-pan-y"
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch"
+          }}
         >
           {specials.map((product, i) => (
             <motion.div
               key={product.id}
-              className="snap-start flex-none w-[75vw] sm:w-[50vw] md:w-[320px] lg:w-[350px]"
-              initial={{ opacity: 0, y: 30 }}
+              className="snap-start snap-stop-always flex-none w-[80vw] sm:w-[50vw] md:w-[320px] lg:w-[350px]"
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: i * 0.05 }}
+              viewport={{ once: true, margin: "100px" }}
             >
               <Link to={`/product/${product.id}`} className="group block">
                 {/* Image */}

@@ -3,7 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { useStore } from "@/contexts/StoreContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
 
 const Products = () => {
@@ -93,40 +93,44 @@ const Products = () => {
 
           {/* Products grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
-            {filtered.map((product, i) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-              >
-                <Link to={`/product/${product.id}`} className="group block">
-                  <div className="relative aspect-[4/5] overflow-hidden bg-secondary rounded-2xl shadow-md group-hover:shadow-xl transition-all duration-500">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      loading="lazy"
-                    />
+            <AnimatePresence mode="popLayout">
+              {filtered.map((product, i) => (
+                <motion.div
+                  key={product.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Link to={`/product/${product.id}`} className="group block">
+                    <div className="relative aspect-[4/5] overflow-hidden bg-secondary rounded-2xl shadow-md group-hover:shadow-xl transition-all duration-500">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        loading="lazy"
+                      />
 
-                    {product.halalCertified && (
-                      <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-foreground text-[8px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg border border-primary/5">
-                        Halal AVS
+                      {product.halalCertified && (
+                        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-foreground text-[8px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg border border-primary/5">
+                          Halal AVS
+                        </div>
+                      )}
+
+                      <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                        <p className="text-white font-bold text-lg mb-0.5">{product.price.toFixed(2)}€ <span className="text-[10px] font-normal opacity-70">/{product.priceUnit === "kg" ? "kg" : "pc"}</span></p>
                       </div>
-                    )}
-
-                    <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/80 to-transparent translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                      <p className="text-white font-bold text-lg mb-0.5">{product.price.toFixed(2)}€ <span className="text-[10px] font-normal opacity-70">/{product.priceUnit === "kg" ? "kg" : "pc"}</span></p>
                     </div>
-                  </div>
 
-                  <div className="mt-4 px-1">
-                    <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1 uppercase tracking-widest font-medium text-[10px]">{product.category}</p>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                    <div className="mt-4 px-1">
+                      <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors line-clamp-1">{product.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-1 uppercase tracking-widest font-medium text-[10px]">{product.category}</p>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
 
           {filtered.length === 0 && (

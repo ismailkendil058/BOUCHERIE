@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
 import { StoreProvider } from "@/contexts/StoreContext";
+import ScrollToTop from "@/components/ScrollToTop";
 
 // Lazy load pages
 const Index = lazy(() => import("./pages/Index"));
@@ -38,6 +39,7 @@ const App = () => (
         <CartProvider>
           <Toaster />
           <Sonner />
+          <ScrollToTop />
           <BrowserRouter>
             <Suspense fallback={<PageLoader />}>
               <Routes>

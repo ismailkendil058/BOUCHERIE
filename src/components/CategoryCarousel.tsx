@@ -59,8 +59,12 @@ const CategoryCarousel = () => {
         <div className="relative">
           <div
             ref={scrollRef}
-            className="flex gap-8 md:gap-12 overflow-x-auto scrollbar-hide pb-8 pt-4 snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            className="flex gap-8 md:gap-12 overflow-x-auto scrollbar-hide pb-8 pt-4 snap-x snap-mandatory touch-pan-y"
+            style={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              WebkitOverflowScrolling: "touch"
+            }}
           >
             {categories.map((cat, i) => (
               <motion.div
