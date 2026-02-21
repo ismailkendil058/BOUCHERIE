@@ -42,9 +42,6 @@ const AdminLayout = () => {
         <NavLink to="/admin/categories" className={linkClass} onClick={onNavigate}>
           <Grid3X3 className="w-4 h-4" /> Catégories
         </NavLink>
-        <NavLink to="/admin/delivery" className={linkClass} onClick={onNavigate}>
-          <Truck className="w-4 h-4" /> Livraison
-        </NavLink>
       </nav>
       <div className="p-4 border-t border-border mt-auto">
         <button

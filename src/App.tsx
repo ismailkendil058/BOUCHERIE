@@ -20,7 +20,6 @@ const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
 const AdminOrders = lazy(() => import("./pages/admin/Orders"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
 const AdminCategories = lazy(() => import("./pages/admin/AdminCategories"));
-const AdminDelivery = lazy(() => import("./pages/admin/AdminDelivery"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Simple loading indicator
@@ -54,7 +53,6 @@ const App = () => (
                   <Route path="orders" element={<AdminOrders />} />
                   <Route path="products" element={<AdminProducts />} />
                   <Route path="categories" element={<AdminCategories />} />
-                  <Route path="delivery" element={<AdminDelivery />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>

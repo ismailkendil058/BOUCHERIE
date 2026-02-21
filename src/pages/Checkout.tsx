@@ -8,20 +8,14 @@ import { toast } from "sonner";
 
 const Checkout = () => {
   const { items, total, clearCart } = useCart();
-  const { deliveryZones, addOrder } = useStore();
+  const { addOrder } = useStore();
   const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
-  const [mode, setMode] = useState<"pickup" | "delivery">("pickup");
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
-  const [selectedZone, setSelectedZone] = useState("");
-
-  const zone = deliveryZones.find((z) => z.id === selectedZone);
-  const deliveryFee = mode === "delivery" && zone ? zone.price : 0;
-  const grandTotal = total + deliveryFee;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,25 +23,20 @@ const Checkout = () => {
       toast.error("Veuillez remplir tous les champs obligatoires.");
       return;
     }
-    if (mode === "pickup" && (!pickupDate || !pickupTime)) {
+    if (!pickupDate || !pickupTime) {
       toast.error("Veuillez sélectionner une date et heure de retrait.");
-      return;
-    }
-    if (mode === "delivery" && !selectedZone) {
-      toast.error("Veuillez sélectionner une zone de livraison.");
       return;
     }
 
     addOrder({
       items: items.map((i) => ({ product: i.product, quantity: i.quantity })),
       customer: { firstName, lastName, phone },
-      mode,
-      pickupDate: mode === "pickup" ? pickupDate : undefined,
-      pickupTime: mode === "pickup" ? pickupTime : undefined,
-      deliveryZone: zone,
-      deliveryFee,
+      mode: "pickup",
+      pickupDate,
+      pickupTime,
+      deliveryFee: 0,
       subtotal: total,
-      total: grandTotal,
+      total: total,
     });
 
     clearCart();
@@ -88,44 +77,23 @@ const Checkout = () => {
               </div>
             </section>
 
-            {/* Mode */}
+            {/* Mode (Always Pickup) */}
             <section>
-              <h2 className="text-lg font-semibold mb-4">Mode de réception</h2>
-              <div className="flex gap-4">
-                <button type="button" onClick={() => setMode("pickup")} className={`flex-1 py-3 text-sm uppercase tracking-widest border transition-colors ${mode === "pickup" ? "bg-foreground text-background" : "border-border hover:border-foreground"}`}>
-                  🏪 Retrait en magasin
-                </button>
-                <button type="button" onClick={() => setMode("delivery")} className={`flex-1 py-3 text-sm uppercase tracking-widest border transition-colors ${mode === "delivery" ? "bg-foreground text-background" : "border-border hover:border-foreground"}`}>
-                  🚚 Livraison
-                </button>
+              <h2 className="text-lg font-semibold mb-4">Retrait en magasin</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Toutes les commandes sont à retirer directement dans notre boutique à l'heure qui vous convient.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground block mb-1">Jour de retrait *</label>
+                  <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} className="w-full border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary" required />
+                </div>
+                <div>
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground block mb-1">Heure de retrait *</label>
+                  <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className="w-full border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary" required />
+                </div>
               </div>
-
-              {mode === "pickup" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground block mb-1">Jour de retrait *</label>
-                    <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} className="w-full border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary" required />
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground block mb-1">Heure de retrait *</label>
-                    <input type="time" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className="w-full border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary" required />
-                  </div>
-                </div>
-              )}
-
-              {mode === "delivery" && (
-                <div className="mt-4">
-                  <label className="text-xs uppercase tracking-widest text-muted-foreground block mb-1">Zone de livraison *</label>
-                  <select value={selectedZone} onChange={(e) => setSelectedZone(e.target.value)} className="w-full border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-1 focus:ring-primary" required>
-                    <option value="">Sélectionnez votre arrondissement</option>
-                    {deliveryZones.map((z) => (
-                      <option key={z.id} value={z.id}>
-                        {z.name} – {z.price.toFixed(2)} €
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
             </section>
 
             {/* Summary */}
@@ -144,15 +112,9 @@ const Checkout = () => {
                   <span>Sous-total</span>
                   <span>{total.toFixed(2)} €</span>
                 </div>
-                {mode === "delivery" && (
-                  <div className="flex justify-between text-sm">
-                    <span>Livraison ({zone?.name || "–"})</span>
-                    <span>{deliveryFee.toFixed(2)} €</span>
-                  </div>
-                )}
                 <div className="flex justify-between text-lg font-semibold pt-2">
                   <span>Total</span>
-                  <span>{grandTotal.toFixed(2)} €</span>
+                  <span>{total.toFixed(2)} €</span>
                 </div>
               </div>
             </section>
